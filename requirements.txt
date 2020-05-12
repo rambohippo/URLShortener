@@ -1,0 +1,8 @@
+pip
+six
+chardet
+idna
+urllib3
+certifi
+setuptools
+requests
