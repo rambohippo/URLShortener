@@ -57,10 +57,10 @@ def open_url(url):
 
     try:
         resp = requests.get(url)
-    except requests.exceptions.MissingSchema as error:
+    except requests.exceptions.MissingSchema:
         print('The schema for the given url is incorrect or missing.')
         raise
-    except requests.exceptions.ConnectionError as error:
+    except requests.exceptions.ConnectionError:
         print('Failed to establish connection to the url', url)
         raise
 
@@ -166,7 +166,7 @@ def db_initialize():
         con = sqlite3.connect(db_path)
         con.execute(command)
         print('Executed the CREATE TABLE command:', command)
-    except sqlite3.Error as error:
+    except sqlite3.Error:
         print('Error while initializing database')
         raise
     finally:
