@@ -8,8 +8,9 @@ import webbrowser
 from urllib.parse import urlparse
 
 db_dir = 'database'
-db_path = db_dir + '/url_shortener.db'
+db_location = db_dir + '/url_shortener.db'
 db_table = 'urls'
+short_base = 'short.end'
 
 
 def main():
@@ -83,7 +84,8 @@ def shorten_url(url):
         raise RuntimeError(message)
 
     short_path = '/' + generate_random_string()
-    short_url = parsed_url.scheme + '://' + parsed_url.netloc + short_path
+    # short_url = parsed_url.scheme + '://' + parsed_url.netloc + short_path
+    short_url = parsed_url.scheme + '://' + short_base + short_path
 
     db_insert(parsed_url.geturl(), parsed_url.scheme, parsed_url.netloc,
               parsed_url.path, short_url, short_path)
@@ -95,7 +97,7 @@ def generate_random_string(size=10):
 
 
 def db_insert(base_url, base_protocol, base_domain, base_path,
-              short_url, short_path):
+              short_url, short_path, db_path=db_location):
     command = "INSERT INTO {} (base_url, base_protocol, base_domain, base_path, short_url, " \
             + "short_path) VALUES ('{}', '{}', '{}', '{}', '{}', '{}')"
     command = command.format(db_table, base_url, base_protocol, base_domain, base_path,
@@ -115,7 +117,7 @@ def db_insert(base_url, base_protocol, base_domain, base_path,
             con.close()
 
 
-def db_select(cols='*', table=db_table, where=''):
+def db_select(db_path=db_location, cols='*', table=db_table, where=''):
     command = 'SELECT {} FROM {}'.format(cols, table)
     if where:
         command += ' WHERE ' + where
@@ -138,9 +140,9 @@ def db_select(cols='*', table=db_table, where=''):
     return record
 
 
-def db_check_if_exists(url, col='base_url'):
+def db_check_if_exists(url, col='base_url', db_path=db_location):
     condition = col + "='" + url + "'"
-    record = db_select(where=condition)
+    record = db_select(where=condition, db_path=db_path)
     return len(record) > 0
 
 
@@ -163,7 +165,7 @@ def db_initialize():
         command = 'CREATE TABLE IF NOT EXISTS {} (base_url text, base_protocol text, ' \
                 + 'base_domain text, base_path text, short_url text, short_path text)'
         command = command.format(db_table)
-        con = sqlite3.connect(db_path)
+        con = sqlite3.connect(db_location)
         con.execute(command)
         print('Executed the CREATE TABLE command:', command)
     except sqlite3.Error:
