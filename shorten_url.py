@@ -170,7 +170,7 @@ def db_initialize():
     # Initialize database table if it does not exist
     try:
         command = 'CREATE TABLE IF NOT EXISTS {} (base_url text, base_protocol text, ' \
-                + 'base_domain text, base_path text, short_url text, short_path text)'
+                + 'base_domain text, base_path text, short_url text, short_path text UNIQUE)'
         command = command.format(db_table)
         con = sqlite3.connect(db_location)
         con.execute(command)
