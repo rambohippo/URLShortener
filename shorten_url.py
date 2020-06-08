@@ -63,7 +63,12 @@ def open_url(url):
         raise
     except requests.exceptions.ConnectionError:
         print('Failed to establish connection to the url', url)
-        raise
+        parsed_url = urlparse(url);
+        if parsed_url.netloc == short_base:
+            message = 'The shortened url entered does not exist in the database'
+            raise RuntimeError(message)
+        else:
+            raise
 
     if resp.status_code == 200:
         webbrowser.open_new_tab(url)
@@ -75,7 +80,10 @@ def open_url(url):
 
 def shorten_url(url):
     if db_check_if_exists(url, col='base_url'):
-        message = 'The url {} already has a shortened version in the database'.format(url)
+        condition = "base_url='" + url + "'"
+        existing_short_url = db_select(cols='short_url', where=condition)
+        message = 'The url {} already has the following shortened version in the database: {}'.format(url,
+            existing_short_url[0][0])
         raise RuntimeError(message)
 
     parsed_url = urlparse(url)
@@ -84,7 +92,6 @@ def shorten_url(url):
         raise RuntimeError(message)
 
     short_path = '/' + generate_random_string()
-    # short_url = parsed_url.scheme + '://' + parsed_url.netloc + short_path
     short_url = parsed_url.scheme + '://' + short_base + short_path
 
     db_insert(parsed_url.geturl(), parsed_url.scheme, parsed_url.netloc,
